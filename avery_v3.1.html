@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L'esperimento di Avery — 1944</title>
+<style>
+:root {
+  --bg: #f2f2f7;
+  --surface: #ffffff;
+  --surface2: #f9f9fb;
+  --border: rgba(0,0,0,0.07);
+  --shadow: 0 2px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+  --text: #1c1c1e;
+  --muted: #6e6e73;
+  --hint: #aeaeb2;
+  --teal: #30c988;
+  --teal-bg: #e8faf2;
+  --teal-text: #1a6b44;
+  --red: #ff453a;
+  --red-bg: #fff2f1;
+  --red-text: #8b1a16;
+  --amber: #ff9f0a;
+  --amber-bg: #fff8ec;
+  --amber-text: #7a4500;
+  --purple: #7c6cf0;
+  --purple-bg: #f0eeff;
+  --purple-text: #3a2f8a;
+  --green-bg: #eefaf3;
+  --green-border: #34c759;
+  --green-text: #1a5c30;
+  --r: 22px;
+  --r-sm: 14px;
+  --r-xs: 10px;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --surface: #1c1c1e;
+    --surface2: #2c2c2e;
+    --border: rgba(255,255,255,0.08);
+    --shadow: 0 2px 16px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.3);
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.3);
+    --text: #f2f2f7;
+    --muted: #aeaeb2;
+    --hint: #636366;
+    --teal: #30c988;
+    --teal-bg: #0d2e1e;
+    --teal-text: #7de8b8;
+    --red: #ff453a;
+    --red-bg: #2c0e0c;
+    --red-text: #ff9f9b;
+    --amber: #ff9f0a;
+    --amber-bg: #2a1a00;
+    --amber-text: #ffd580;
+    --purple: #9b8ff5;
+    --purple-bg: #1e1a38;
+    --purple-text: #c0b8fa;
+    --green-bg: #0d2218;
+    --green-border: #30d158;
+    --green-text: #7de8a8;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.layout { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 240px; flex-shrink: 0;
+  padding: 2rem 1rem;
+  position: sticky; top: 0; height: 100vh;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 4px;
+}
+
+.sidebar-logo {
+  font-size: 13px; font-weight: 600; color: var(--muted);
+  letter-spacing: -.01em; padding: 0 12px;
+  margin-bottom: 1.25rem;
+}
+
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: var(--r-sm);
+  font-size: 14px; font-weight: 500; color: var(--muted);
+  cursor: pointer; transition: all .2s cubic-bezier(.4,0,.2,1);
+  border: none; background: none; width: 100%;
+  text-align: left; font-family: var(--font);
+}
+.nav-item:hover { background: var(--surface); color: var(--text); }
+.nav-item.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+.nav-icon {
+  width: 28px; height: 28px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+  background: var(--bg);
+}
+.nav-item.active .nav-icon { background: var(--teal); }
+
+.main {
+  flex: 1; padding: 2.5rem 2rem;
+  max-width: 720px;
+}
+
+.sec { display: none; animation: fadeIn .25s ease; }
+.sec.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Page header */
+.ph { margin-bottom: 2rem; }
+.ph-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; letter-spacing: .03em;
+  color: var(--teal-text); background: var(--teal-bg);
+  padding: 5px 12px; border-radius: 30px; margin-bottom: .8rem;
+}
+.ph-title { font-size: 30px; font-weight: 700; letter-spacing: -.5px; line-height: 1.2; margin-bottom: .5rem; }
+.ph-desc { font-size: 16px; color: var(--muted); line-height: 1.6; font-weight: 400; }
+
+/* Cards */
+.card {
+  background: var(--surface);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+.card-sm { padding: 1.1rem 1.25rem; }
+.card-title { font-size: 15px; font-weight: 600; margin-bottom: .4rem; }
+.card-body { font-size: 14px; color: var(--muted); line-height: 1.7; }
+.card-body strong { color: var(--text); font-weight: 500; }
+
+/* Tinted cards */
+.card-teal { background: var(--teal-bg); }
+.card-teal .card-title { color: var(--teal-text); }
+.card-teal .card-body { color: var(--teal-text); opacity: .85; }
+.card-red { background: var(--red-bg); }
+.card-red .card-title { color: var(--red-text); }
+.card-red .card-body { color: var(--red-text); opacity: .85; }
+.card-amber { background: var(--amber-bg); }
+.card-amber .card-title { color: var(--amber-text); }
+.card-amber .card-body { color: var(--amber-text); opacity: .85; }
+.card-purple { background: var(--purple-bg); }
+.card-purple .card-title { color: var(--purple-text); }
+.card-purple .card-body { color: var(--purple-text); opacity: .85; }
+
+/* Two col */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin: 1rem 0; }
+
+/* Bacteria icon */
+.bact-wrap { width: 56px; height: 56px; margin: 0 auto 12px; }
+
+/* Pill badges */
+.pill {
+  display: inline-block; font-size: 12px; font-weight: 600;
+  padding: 4px 12px; border-radius: 30px;
+}
+.pill-yes { background: var(--teal); color: #fff; }
+.pill-no { background: var(--red); color: #fff; }
+
+/* Step controls */
+.step-controls {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 1.25rem;
+}
+.step-btn {
+  padding: 8px 18px; border-radius: 30px;
+  background: var(--surface); border: none;
+  color: var(--text); font-size: 14px; font-weight: 500;
+  cursor: pointer; font-family: var(--font);
+  box-shadow: var(--shadow-sm);
+  transition: all .15s;
+}
+.step-btn:hover { transform: scale(1.02); }
+.step-btn:active { transform: scale(.98); }
+.step-btn:disabled { opacity: .3; cursor: default; transform: none; }
+.step-dots { display: flex; gap: 6px; flex: 1; justify-content: center; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--hint); transition: all .25s; }
+.dot.active { background: var(--teal); transform: scale(1.3); }
+.step-counter { font-size: 12px; color: var(--hint); font-weight: 500; }
+
+.step-panel { display: none; } .step-panel.active { display: block; }
+
+/* Enzyme step card */
+.step-card {
+  background: var(--surface); border-radius: var(--r);
+  box-shadow: var(--shadow); padding: 1.75rem;
+  margin-bottom: 1rem;
+}
+.step-row {
+  display: grid; grid-template-columns: 1fr 40px 1fr;
+  align-items: center; gap: 1rem; margin: 1.25rem 0;
+}
+.enzyme-circle {
+  width: 80px; height: 80px; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; margin: 0 auto 8px;
+  font-size: 14px; font-weight: 700;
+}
+.ec-blue { background: #e3f0ff; color: #1a4a8a; }
+.ec-amber { background: var(--amber-bg); color: var(--amber-text); }
+.ec-red { background: var(--red-bg); color: var(--red-text); border: 2px solid var(--red); }
+.ec-sub { font-size: 10px; font-weight: 500; opacity: .7; margin-top: 2px; }
+.result-circle {
+  width: 80px; height: 80px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 8px;
+}
+.arrow-mid { font-size: 22px; color: var(--hint); text-align: center; }
+
+/* Table */
+.table-wrap {
+  background: var(--surface); border-radius: var(--r);
+  box-shadow: var(--shadow); overflow: hidden; margin: 1rem 0;
+}
+.exp-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.exp-table th {
+  background: var(--surface2); font-weight: 600; font-size: 11px;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--hint);
+  padding: 12px 16px; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.exp-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.exp-table tr:last-child td { border-bottom: none; }
+.exp-table .row-yes td { background: #f0fdf6; }
+.exp-table .row-no td { background: #fff5f5; }
+@media (prefers-color-scheme: dark) {
+  .exp-table .row-yes td { background: #0a1f13; }
+  .exp-table .row-no td { background: #1e0a0a; }
+}
+.badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 8px; }
+.b-yes { background: var(--teal); color: #fff; }
+.b-no { background: var(--red); color: #fff; }
+
+/* Limit grid */
+.limit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin: 1rem 0; }
+.limit-card {
+  background: var(--amber-bg); border-radius: var(--r-sm);
+  padding: 1.1rem 1.25rem;
+}
+.lc-title { font-size: 14px; font-weight: 600; color: var(--amber-text); margin-bottom: .35rem; }
+.lc-body { font-size: 13px; color: var(--amber-text); opacity: .8; line-height: 1.6; }
+
+/* Timeline */
+.tl { margin: 1rem 0; }
+.tl-item { display: flex; gap: 14px; margin-bottom: 1.25rem; }
+.tl-left { display: flex; flex-direction: column; align-items: center; }
+.tl-dot {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--teal); color: #fff;
+  font-weight: 700; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; box-shadow: 0 0 0 4px var(--teal-bg);
+}
+.tl-line { width: 2px; background: var(--border); flex: 1; margin: 6px 0; }
+.tl-content { padding-top: 5px; }
+.tl-year { font-size: 11px; font-weight: 700; color: var(--teal); letter-spacing: .06em; text-transform: uppercase; margin-bottom: .2rem; }
+.tl-t { font-size: 15px; font-weight: 600; margin-bottom: .3rem; }
+.tl-b { font-size: 13px; color: var(--muted); line-height: 1.65; }
+.tl-b strong { color: var(--text); }
+
+/* Vis block */
+.vis-block {
+  background: var(--surface); border-radius: var(--r);
+  box-shadow: var(--shadow); padding: 1.5rem;
+  margin: 1rem 0;
+}
+.vis-cap { font-size: 12px; color: var(--hint); text-align: center; margin-top: .75rem; }
+
+svg { display: block; width: 100%; }
+
+/* Divider */
+.div { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+/* Inline muted text */
+p.prose { font-size: 15px; color: var(--muted); line-height: 1.75; margin-bottom: 1rem; }
+p.prose strong { color: var(--text); font-weight: 500; }
+
+@media (max-width: 640px) {
+  .layout { flex-direction: column; }
+  .sidebar {
+    width: 100%; height: auto; position: static;
+    flex-direction: row; flex-wrap: wrap; padding: 1rem .75rem .5rem;
+    gap: 4px; overflow-x: auto;
+  }
+  .sidebar-logo { display: none; }
+  .nav-item { width: auto; white-space: nowrap; }
+  .main { padding: 1.25rem .75rem; }
+  .two-col, .limit-grid { grid-template-columns: 1fr; }
+  .ph-title { font-size: 24px; }
+  .step-row { grid-template-columns: 1fr 28px 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<aside class="sidebar">
+  <div class="sidebar-logo">Biologia · Capitolo B1</div>
+  <button class="nav-item active" onclick="show('contesto')">
+    <span class="nav-icon">1</span> Contesto
+  </button>
+  <button class="nav-item" onclick="show('esperimento')">
+    <span class="nav-icon">2</span> Esperimento
+  </button>
+  <button class="nav-item" onclick="show('risultati')">
+    <span class="nav-icon">3</span> Risultati
+  </button>
+  <button class="nav-item" onclick="show('limiti')">
+    <span class="nav-icon">4</span> Limiti
+  </button>
+  <button class="nav-item" onclick="show('dopo')">
+    <span class="nav-icon">5</span> Dopo Avery
+  </button>
+</aside>
+
+<main class="main">
+
+<!-- CONTESTO -->
+<div id="s-contesto" class="sec active">
+  <div class="ph">
+    <div class="ph-tag">1928 – 1944</div>
+    <div class="ph-title">Il problema del materiale genetico</div>
+    <div class="ph-desc">Prima di Avery, nessuno sapeva con certezza chi trasmettesse l'informazione ereditaria.</div>
+  </div>
+
+  <p class="prose">Negli anni '20 del Novecento, i cromosomi erano noti per contenere sia <strong>DNA</strong> che <strong>proteine</strong>. Le proteine, con 20 amminoacidi diversi, sembravano molto più adatte a codificare informazioni complesse. Il DNA, con soli 4 nucleotidi, sembrava troppo semplice.</p>
+
+  <div class="two-col">
+    <div class="card" style="text-align:center">
+      <div class="bact-wrap">
+        <svg viewBox="0 0 56 56"><ellipse cx="28" cy="28" rx="24" ry="13" fill="#d1f0e0" stroke="#34c759" stroke-width="2"/><ellipse cx="28" cy="28" rx="15" ry="8" fill="#eefaf3" stroke="#34c759" stroke-width="1.5"/><text x="28" y="32" text-anchor="middle" font-size="10" font-weight="700" fill="#1a5c30" font-family="-apple-system,sans-serif">R</text></svg>
+      </div>
+      <div class="card-title">Ceppo R</div>
+      <div class="card-body">Senza capsula. Innocuo — il sistema immunitario lo elimina. I topi sopravvivono.</div>
+    </div>
+    <div class="card" style="text-align:center;background:var(--red-bg)">
+      <div class="bact-wrap">
+        <svg viewBox="0 0 56 56"><ellipse cx="28" cy="28" rx="26" ry="16" fill="#ffc9c9" stroke="#ff453a" stroke-width="2"/><ellipse cx="28" cy="28" rx="18" ry="10" fill="#fff2f1" stroke="#ff453a" stroke-width="1.5"/><ellipse cx="28" cy="28" rx="10" ry="6" fill="#ff9a96" stroke="#cc1a10" stroke-width="1"/><text x="28" y="32" text-anchor="middle" font-size="10" font-weight="700" fill="#8b1a16" font-family="-apple-system,sans-serif">S</text></svg>
+      </div>
+      <div class="card-title" style="color:var(--red-text)">Ceppo S</div>
+      <div class="card-body" style="color:var(--red-text);opacity:.8">Con capsula protettiva. Patogeno — sfugge al sistema immunitario. I topi muoiono.</div>
+    </div>
+  </div>
+
+  <div class="vis-block">
+    <p style="font-size:14px;font-weight:600;margin-bottom:1rem;">L'esperimento di Griffith (1928)</p>
+    <svg viewBox="0 0 620 150" role="img">
+      <title>Schema esperimento Griffith</title>
+      <defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+      <rect x="10" y="20" width="120" height="64" rx="14" fill="#d1f0e0" stroke="#34c759" stroke-width="1.5"/>
+      <text x="70" y="46" text-anchor="middle" font-size="13" font-weight="600" fill="#1a5c30" font-family="-apple-system,sans-serif">S uccisi</text>
+      <text x="70" y="63" text-anchor="middle" font-size="11" fill="#1a5c30" font-family="-apple-system,sans-serif">dal calore</text>
+      <text x="70" y="110" text-anchor="middle" font-size="11" fill="#6e6e73" font-family="-apple-system,sans-serif">non patogeni</text>
+
+      <text x="150" y="55" text-anchor="middle" font-size="20" fill="#aeaeb2" font-family="-apple-system,sans-serif">+</text>
+
+      <rect x="166" y="20" width="120" height="64" rx="14" fill="#d1f0e0" stroke="#34c759" stroke-width="1.5"/>
+      <text x="226" y="46" text-anchor="middle" font-size="13" font-weight="600" fill="#1a5c30" font-family="-apple-system,sans-serif">R vivi</text>
+      <text x="226" y="63" text-anchor="middle" font-size="11" fill="#1a5c30" font-family="-apple-system,sans-serif">non virulenti</text>
+
+      <line x1="290" y1="52" x2="336" y2="52" stroke="#aeaeb2" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="313" y="43" text-anchor="middle" font-size="11" fill="#aeaeb2" font-family="-apple-system,sans-serif">inoculo</text>
+      <text x="313" y="65" text-anchor="middle" font-size="11" fill="#aeaeb2" font-family="-apple-system,sans-serif">nel topo</text>
+
+      <rect x="344" y="14" width="136" height="76" rx="14" fill="#fff2f1" stroke="#ff453a" stroke-width="2"/>
+      <text x="412" y="44" text-anchor="middle" font-size="14" font-weight="700" fill="#8b1a16" font-family="-apple-system,sans-serif">Il topo muore</text>
+      <text x="412" y="64" text-anchor="middle" font-size="11" fill="#8b1a16" font-family="-apple-system,sans-serif">batteri S vivi ritrovati</text>
+      <text x="412" y="80" text-anchor="middle" font-size="11" fill="#8b1a16" font-family="-apple-system,sans-serif">nei tessuti</text>
+
+      <rect x="20" y="120" width="540" height="28" rx="8" fill="#fff8ec"/>
+      <text x="290" y="139" text-anchor="middle" font-size="12" font-weight="500" fill="#7a4500" font-family="-apple-system,sans-serif">Qualcosa nei batteri S morti trasforma i batteri R — ma cos'è?</text>
+    </svg>
+    <div class="vis-cap">Griffith (1928) — il "fattore di trasformazione" esiste, ma la sua natura è sconosciuta</div>
+  </div>
+
+  <div class="card card-amber card-sm">
+    <div class="card-title">La domanda di Avery</div>
+    <div class="card-body">Oswald Avery, con MacLeod e McCarty, lavora per quasi <strong>10 anni</strong> per identificare la natura chimica del fattore di trasformazione. Il suo metodo: eliminazione sistematica.</div>
+  </div>
+</div>
+
+<!-- ESPERIMENTO -->
+<div id="s-esperimento" class="sec">
+  <div class="ph">
+    <div class="ph-tag">1944 · Avery, MacLeod, McCarty</div>
+    <div class="ph-title">La distruzione selettiva</div>
+    <div class="ph-desc">Distruggi una molecola alla volta. Se la trasformazione si blocca, quella è la responsabile.</div>
+  </div>
+
+  <p class="prose">Avery prende l'estratto dei batteri S uccisi e lo tratta con enzimi specifici — uno per categoria di molecola. Poi aggiunge ogni estratto trattato a batteri R vivi e osserva se avviene la trasformazione.</p>
+
+  <div class="step-controls">
+    <button class="step-btn" id="prev-btn" onclick="stepChange(-1)" disabled>← Indietro</button>
+    <div class="step-dots" id="step-dots"></div>
+    <button class="step-btn" id="next-btn" onclick="stepChange(1)">Avanti →</button>
+    <span class="step-counter" id="step-label">1 / 4</span>
+  </div>
+
+  <!-- Step 0 -->
+  <div id="step-0" class="step-panel active">
+    <div class="step-card">
+      <p style="font-size:17px;font-weight:700;margin-bottom:.3rem;">Preparazione dell'estratto</p>
+      <p style="font-size:13px;color:var(--hint);margin-bottom:1.25rem;">I batteri S vengono uccisi, frantumati e filtrati</p>
+      <svg viewBox="0 0 580 140" role="img">
+        <title>Preparazione estratto da batteri S</title>
+        <defs><marker id="a0" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+        <rect x="10" y="20" width="120" height="90" rx="16" fill="#fff2f1" stroke="#ff453a" stroke-width="1.5"/>
+        <ellipse cx="70" cy="58" rx="26" ry="14" fill="#ffc9c9" stroke="#ff453a" stroke-width="1.5"/>
+        <ellipse cx="70" cy="58" rx="16" ry="8" fill="#fff2f1" stroke="#cc1a10" stroke-width="1"/>
+        <ellipse cx="50" cy="82" rx="22" ry="12" fill="#ffc9c9" stroke="#ff453a" stroke-width="1.5"/>
+        <ellipse cx="95" cy="86" rx="22" ry="12" fill="#ffc9c9" stroke="#ff453a" stroke-width="1.5"/>
+        <text x="70" y="126" text-anchor="middle" font-size="12" font-weight="600" fill="#8b1a16" font-family="-apple-system,sans-serif">Batteri S uccisi</text>
+        <line x1="134" y1="70" x2="172" y2="70" stroke="#aeaeb2" stroke-width="1.5" marker-end="url(#a0)"/>
+        <text x="153" y="61" text-anchor="middle" font-size="10" fill="#aeaeb2" font-family="-apple-system,sans-serif">lisi</text>
+        <text x="153" y="74" text-anchor="middle" font-size="10" fill="#aeaeb2" font-family="-apple-system,sans-serif">+ filtro</text>
+        <rect x="180" y="20" width="130" height="90" rx="16" fill="#e3f0ff" stroke="#3a8fd4" stroke-width="1.5"/>
+        <text x="245" y="52" text-anchor="middle" font-size="13" font-weight="700" fill="#1a3a6a" font-family="-apple-system,sans-serif">Estratto</text>
+        <text x="245" y="70" text-anchor="middle" font-size="11" fill="#3a6aaa" font-family="-apple-system,sans-serif">DNA  ·  RNA</text>
+        <text x="245" y="86" text-anchor="middle" font-size="11" fill="#3a6aaa" font-family="-apple-system,sans-serif">Proteine  ·  Lipidi</text>
+        <text x="245" y="126" text-anchor="middle" font-size="12" font-weight="600" fill="#1a3a6a" font-family="-apple-system,sans-serif">Estratto grezzo</text>
+        <line x1="314" y1="70" x2="352" y2="70" stroke="#aeaeb2" stroke-width="1.5" marker-end="url(#a0)"/>
+        <text x="333" y="61" text-anchor="middle" font-size="10" fill="#aeaeb2" font-family="-apple-system,sans-serif">aggiunto</text>
+        <text x="333" y="74" text-anchor="middle" font-size="10" fill="#aeaeb2" font-family="-apple-system,sans-serif">a batteri R</text>
+        <rect x="360" y="20" width="130" height="90" rx="16" fill="#d1f0e0" stroke="#34c759" stroke-width="1.5"/>
+        <ellipse cx="410" cy="60" rx="22" ry="12" fill="#a8e6c0" stroke="#34c759" stroke-width="1.5"/>
+        <ellipse cx="410" cy="60" rx="13" ry="7" fill="#d1f0e0" stroke="#1a6b44" stroke-width="1"/>
+        <ellipse cx="450" cy="76" rx="22" ry="12" fill="#a8e6c0" stroke="#34c759" stroke-width="1.5"/>
+        <ellipse cx="450" cy="76" rx="13" ry="7" fill="#d1f0e0" stroke="#1a6b44" stroke-width="1"/>
+        <text x="425" y="126" text-anchor="middle" font-size="12" font-weight="600" fill="#1a6b44" font-family="-apple-system,sans-serif">Batteri R vivi</text>
+        <text x="543" y="62" text-anchor="middle" font-size="26" fill="#aeaeb2" font-family="-apple-system,sans-serif">?</text>
+        <text x="543" y="82" text-anchor="middle" font-size="11" fill="#aeaeb2" font-family="-apple-system,sans-serif">risultato</text>
+      </svg>
+    </div>
+    <div class="card card-amber card-sm">
+      <div class="card-title">La logica dell'esperimento</div>
+      <div class="card-body">Se distruggo la molecola X e la trasformazione si blocca → X è il fattore responsabile. Se continua → X non è responsabile. Avery ripete questo test per ogni categoria di biomolecola nell'estratto.</div>
+    </div>
+  </div>
+
+  <!-- Step 1 -->
+  <div id="step-1" class="step-panel">
+    <div class="step-card">
+      <p style="font-size:17px;font-weight:700;margin-bottom:.25rem;">Trattamento con <span style="color:#3a8fd4">RNasi</span></p>
+      <p style="font-size:13px;color:var(--hint);margin-bottom:1.5rem;">L'enzima RNasi degrada completamente tutto l'RNA nell'estratto</p>
+      <div class="step-row">
+        <div style="text-align:center">
+          <div class="enzyme-circle ec-blue" style="width:80px;height:80px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 8px">
+            <span style="font-size:15px;font-weight:700">RNasi</span>
+            <span class="ec-sub">degrada RNA</span>
+          </div>
+          <div style="font-size:12px;color:var(--hint)">DNA intatto ✓</div>
+          <div style="font-size:12px;color:var(--hint)">Proteine intatte ✓</div>
+        </div>
+        <div class="arrow-mid">→</div>
+        <div style="text-align:center">
+          <div style="width:80px;height:80px;border-radius:50%;background:#fff2f1;border:2.5px solid #ff453a;display:flex;align-items:center;justify-content:center;margin:0 auto 8px">
+            <svg viewBox="0 0 50 50" style="width:38px;height:38px"><ellipse cx="25" cy="25" rx="20" ry="12" fill="#ffc9c9" stroke="#ff453a" stroke-width="2"/><ellipse cx="25" cy="25" rx="12" ry="7" fill="#fff2f1" stroke="#cc1a10" stroke-width="1.5"/></svg>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Batteri R → S virulenti</div>
+          <span class="pill pill-yes">Trasformazione avviene</span>
+        </div>
+      </div>
+    </div>
+    <div class="card card-sm">
+      <div class="card-title">Conclusione</div>
+      <div class="card-body">Anche senza RNA, la trasformazione avviene. <strong>L'RNA non è il fattore di trasformazione.</strong></div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div id="step-2" class="step-panel">
+    <div class="step-card">
+      <p style="font-size:17px;font-weight:700;margin-bottom:.25rem;">Trattamento con <span style="color:var(--amber)">Proteasi</span></p>
+      <p style="font-size:13px;color:var(--hint);margin-bottom:1.5rem;">La proteasi degrada completamente tutte le proteine nell'estratto</p>
+      <div class="step-row">
+        <div style="text-align:center">
+          <div class="enzyme-circle ec-amber" style="width:80px;height:80px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 8px">
+            <span style="font-size:14px;font-weight:700">Proteasi</span>
+            <span class="ec-sub">degrada proteine</span>
+          </div>
+          <div style="font-size:12px;color:var(--hint)">DNA intatto ✓</div>
+          <div style="font-size:12px;color:var(--hint)">RNA intatto ✓</div>
+        </div>
+        <div class="arrow-mid">→</div>
+        <div style="text-align:center">
+          <div style="width:80px;height:80px;border-radius:50%;background:#fff2f1;border:2.5px solid #ff453a;display:flex;align-items:center;justify-content:center;margin:0 auto 8px">
+            <svg viewBox="0 0 50 50" style="width:38px;height:38px"><ellipse cx="25" cy="25" rx="20" ry="12" fill="#ffc9c9" stroke="#ff453a" stroke-width="2"/><ellipse cx="25" cy="25" rx="12" ry="7" fill="#fff2f1" stroke="#cc1a10" stroke-width="1.5"/></svg>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Batteri R → S virulenti</div>
+          <span class="pill pill-yes">Trasformazione avviene</span>
+        </div>
+      </div>
+    </div>
+    <div class="card card-sm">
+      <div class="card-title">Conclusione</div>
+      <div class="card-body">Anche senza proteine, la trasformazione avviene. <strong>Le proteine non sono il fattore di trasformazione</strong> — la teoria dominante dell'epoca inizia a vacillare.</div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div id="step-3" class="step-panel">
+    <div class="step-card" style="border:2px solid var(--red)">
+      <p style="font-size:17px;font-weight:700;margin-bottom:.25rem;">Trattamento con <span style="color:var(--red)">DNasi</span></p>
+      <p style="font-size:13px;color:var(--hint);margin-bottom:1.5rem;">La DNasi degrada completamente tutto il DNA nell'estratto</p>
+      <div class="step-row">
+        <div style="text-align:center">
+          <div class="enzyme-circle ec-red" style="width:80px;height:80px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 8px">
+            <span style="font-size:15px;font-weight:700">DNasi</span>
+            <span class="ec-sub">degrada DNA</span>
+          </div>
+          <div style="font-size:12px;color:var(--hint)">RNA intatto ✓</div>
+          <div style="font-size:12px;color:var(--hint)">Proteine intatte ✓</div>
+        </div>
+        <div class="arrow-mid">→</div>
+        <div style="text-align:center">
+          <div style="width:80px;height:80px;border-radius:50%;background:var(--green-bg);border:2.5px solid var(--green-border);display:flex;align-items:center;justify-content:center;margin:0 auto 8px">
+            <svg viewBox="0 0 50 50" style="width:38px;height:38px"><ellipse cx="25" cy="25" rx="20" ry="12" fill="#a8e6c0" stroke="#34c759" stroke-width="2"/><ellipse cx="25" cy="25" rx="12" ry="7" fill="#d1f0e0" stroke="#1a6b44" stroke-width="1.5"/></svg>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Batteri R restano R</div>
+          <span class="pill pill-no">Trasformazione bloccata</span>
+        </div>
+      </div>
+    </div>
+    <div class="card card-teal card-sm">
+      <div class="card-title">Il risultato decisivo</div>
+      <div class="card-body">Solo la distruzione del DNA blocca la trasformazione. <strong>Il DNA è il fattore di trasformazione.</strong> Avery isola poi DNA quasi puro e dimostra che da solo è sufficiente.</div>
+    </div>
+  </div>
+</div>
+
+<!-- RISULTATI -->
+<div id="s-risultati" class="sec">
+  <div class="ph">
+    <div class="ph-tag">Conclusioni · 1944</div>
+    <div class="ph-title">Il DNA è il materiale genetico</div>
+    <div class="ph-desc">Un metodo di eliminazione sistematica porta a una risposta inequivocabile.</div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="exp-table">
+      <thead>
+        <tr>
+          <th>Enzima</th>
+          <th>Molecola eliminata</th>
+          <th>Trasformazione</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="row-yes">
+          <td><strong>RNasi</strong></td>
+          <td>RNA</td>
+          <td><span class="badge b-yes">Avviene ✓</span></td>
+        </tr>
+        <tr class="row-yes">
+          <td><strong>Proteasi</strong></td>
+          <td>Proteine</td>
+          <td><span class="badge b-yes">Avviene ✓</span></td>
+        </tr>
+        <tr class="row-no">
+          <td><strong>DNasi</strong></td>
+          <td><strong>DNA</strong></td>
+          <td><span class="badge b-no">Bloccata ✗</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card card-teal">
+    <div class="card-title">Conclusione logica</div>
+    <div class="card-body">L'unica condizione che blocca la trasformazione è l'assenza di DNA. RNA e proteine sono irrilevanti. <strong>Il DNA è il materiale genetico</strong> — dimostrato sperimentalmente per la prima volta nella storia.</div>
+  </div>
+
+  <div class="div"></div>
+  <p class="prose">Fino al 1944 la comunità scientifica credeva che le proteine fossero il materiale genetico. Avery ribalta questo paradigma con un approccio elementare: <strong>non teorizza, elimina</strong>. Rimuove ogni possibile alternativa finché rimane una sola spiegazione.</p>
+</div>
+
+<!-- LIMITI -->
+<div id="s-limiti" class="sec">
+  <div class="ph">
+    <div class="ph-tag">Ricezione scientifica · 1944</div>
+    <div class="ph-title">Perché nessuno ci credette subito</div>
+    <div class="ph-desc">Un risultato rivoluzionario, accolto con scetticismo diffuso. Quattro motivi.</div>
+  </div>
+
+  <div class="limit-grid">
+    <div class="limit-card">
+      <div class="lc-title">DNA "troppo semplice"</div>
+      <div class="lc-body">Solo 4 nucleotidi diversi. Come può contenere informazioni così complesse? Le proteine, con 20 amminoacidi, sembravano strutturalmente più adatte.</div>
+    </div>
+    <div class="limit-card">
+      <div class="lc-title">Campione non puro al 100%</div>
+      <div class="lc-body">L'estratto usato conteneva tracce di proteine residue. Non si poteva escludere del tutto che fossero quelle — e non il DNA — a causare la trasformazione.</div>
+    </div>
+    <div class="limit-card">
+      <div class="lc-title">Batteri "inferiori"</div>
+      <div class="lc-body">I procarioti erano considerati troppo semplici. Alcuni scienziati dubitavano che i batteri possedessero veri e propri geni — quindi i risultati sembravano inapplicabili.</div>
+    </div>
+    <div class="limit-card">
+      <div class="lc-title">Nessuna conferma esterna</div>
+      <div class="lc-body">La comunità scientifica attendeva una verifica con un sistema sperimentale diverso. Avery non poteva fornirla da solo — ci vorranno Hershey e Chase nel 1952.</div>
+    </div>
+  </div>
+
+  <div class="card card-amber card-sm" style="margin-top:1rem">
+    <div class="card-title">Un Nobel mai ricevuto</div>
+    <div class="card-body">Avery muore nel 1955 senza il Nobel. Watson, Crick e Wilkins lo ricevono nel 1962 per la doppia elica — costruita sulle fondamenta che Avery aveva posto. Molti lo considerano una delle omissioni più gravi nella storia del premio.</div>
+  </div>
+</div>
+
+<!-- DOPO AVERY -->
+<div id="s-dopo" class="sec">
+  <div class="ph">
+    <div class="ph-tag">1952 – 1953</div>
+    <div class="ph-title">La conferma e la struttura</div>
+    <div class="ph-desc">Due esperimenti chiudono il dibattito. Poi arriva la doppia elica.</div>
+  </div>
+
+  <div class="tl">
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-dot">1</div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-year">1952</div>
+        <div class="tl-t">Hershey e Chase — la conferma definitiva</div>
+        <div class="tl-b">Usano il fago T2 con isotopi radioattivi: <strong>³²P nel DNA</strong> e <strong>³⁵S nelle proteine</strong>. Dopo l'infezione, solo il ³²P entra nei batteri. Il DNA — non le proteine — porta l'informazione genetica virale. Ogni dubbio residuo scompare.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-dot">2</div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-year">1952</div>
+        <div class="tl-t">Rosalind Franklin — la fotografia 51</div>
+        <div class="tl-b">Franklin ottiene immagini ai raggi X straordinariamente nitide del DNA. La <em>Photograph 51</em> rivela una struttura simmetrica a elica con diametro costante. Questi dati saranno fondamentali per Watson e Crick — ma Franklin non riceverà mai il riconoscimento che meritava.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-dot">3</div></div>
+      <div class="tl-content">
+        <div class="tl-year">1953</div>
+        <div class="tl-t">Watson e Crick — il modello a doppia elica</div>
+        <div class="tl-b">Pubblicano su <em>Nature</em> il modello del DNA: due catene antiparallele tenute da legami a idrogeno tra basi complementari (A=T, G≡C). Sapere che il DNA era il materiale genetico — grazie ad Avery — era il prerequisito necessario per costruire questo modello.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="vis-block">
+    <p style="font-size:14px;font-weight:600;margin-bottom:1rem;">Schema Hershey e Chase (1952)</p>
+    <svg viewBox="0 0 600 120" role="img">
+      <title>Esperimento Hershey Chase fago T2</title>
+      <defs><marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+      <polygon points="62,12 86,46 38,46" fill="#f0eeff" stroke="#7c6cf0" stroke-width="1.5"/>
+      <rect x="46" y="46" width="32" height="28" rx="4" fill="#f0eeff" stroke="#7c6cf0" stroke-width="1.5"/>
+      <line x1="40" y1="74" x2="30" y2="94" stroke="#7c6cf0" stroke-width="1.5"/>
+      <line x1="52" y1="76" x2="46" y2="96" stroke="#7c6cf0" stroke-width="1.5"/>
+      <line x1="62" y1="76" x2="62" y2="98" stroke="#7c6cf0" stroke-width="1.5"/>
+      <line x1="72" y1="76" x2="78" y2="96" stroke="#7c6cf0" stroke-width="1.5"/>
+      <line x1="84" y1="74" x2="94" y2="94" stroke="#7c6cf0" stroke-width="1.5"/>
+      <text x="62" y="64" text-anchor="middle" font-size="9" fill="#3a2f8a" font-family="-apple-system,sans-serif">³²P DNA</text>
+      <text x="62" y="112" text-anchor="middle" font-size="11" font-weight="600" fill="#3a2f8a" font-family="-apple-system,sans-serif">Fago T2</text>
+      <line x1="100" y1="58" x2="140" y2="58" stroke="#aeaeb2" stroke-width="1.5" marker-end="url(#a3)"/>
+      <text x="120" y="50" text-anchor="middle" font-size="10" fill="#aeaeb2" font-family="-apple-system,sans-serif">infetta</text>
+      <ellipse cx="198" cy="68" rx="46" ry="30" fill="#d1f0e0" stroke="#34c759" stroke-width="1.5"/>
+      <ellipse cx="188" cy="56" rx="16" ry="9" fill="#80d4a8" stroke="#34c759" stroke-width="1"/>
+      <text x="188" y="59" text-anchor="middle" font-size="8" fill="#1a6b44" font-family="-apple-system,sans-serif">³²P entra</text>
+      <text x="198" y="112" text-anchor="middle" font-size="11" font-weight="600" fill="#1a6b44" font-family="-apple-system,sans-serif">Batterio E. coli</text>
+      <line x1="247" y1="58" x2="287" y2="58" stroke="#aeaeb2" stroke-width="1.5" marker-end="url(#a3)"/>
+      <text x="267" y="50" text-anchor="middle" font-size="10" fill="#aeaeb2" font-family="-apple-system,sans-serif">centrifuga</text>
+      <rect x="295" y="18" width="124" height="36" rx="10" fill="#fff2f1" stroke="#ff453a" stroke-width="1.5"/>
+      <text x="357" y="38" text-anchor="middle" font-size="12" font-weight="600" fill="#8b1a16" font-family="-apple-system,sans-serif">Surnatante — ³⁵S fuori</text>
+      <rect x="295" y="66" width="124" height="36" rx="10" fill="#d1f0e0" stroke="#34c759" stroke-width="1.5"/>
+      <text x="357" y="86" text-anchor="middle" font-size="12" font-weight="600" fill="#1a6b44" font-family="-apple-system,sans-serif">Pellet — ³²P dentro</text>
+      <rect x="436" y="28" width="150" height="56" rx="14" fill="#e8faf2" stroke="#30c988" stroke-width="2"/>
+      <text x="511" y="54" text-anchor="middle" font-size="14" font-weight="700" fill="#1a6b44" font-family="-apple-system,sans-serif">DNA = materiale</text>
+      <text x="511" y="72" text-anchor="middle" font-size="14" font-weight="700" fill="#1a6b44" font-family="-apple-system,sans-serif">genetico ✓</text>
+    </svg>
+    <div class="vis-cap">Il ³²P (DNA) entra nei batteri — il ³⁵S (proteine) rimane fuori</div>
+  </div>
+
+  <div class="card card-purple card-sm">
+    <div class="card-title">Il ruolo di Avery nella storia</div>
+    <div class="card-body">Senza Avery, Watson e Crick non avrebbero saputo su <em>cosa</em> concentrarsi. La scoperta della doppia elica è possibile solo perché Avery aveva dimostrato che il DNA — e non le proteine — è il depositario dell'informazione genetica. È l'anello fondamentale.</div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+const secMap = {contesto:0,esperimento:1,risultati:2,limiti:3,dopo:4};
+
+function show(id) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('s-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item')[secMap[id]].classList.add('active');
+  window.scrollTo(0,0);
+  if (id === 'esperimento') buildDots();
+}
+
+let cur=0; const total=3;
+const labels=['1 / 4','2 / 4','3 / 4','4 / 4'];
+
+function buildDots(){
+  const d=document.getElementById('step-dots');
+  if (!d) return;
+  d.innerHTML='';
+  for(let i=0;i<=total;i++){
+    const s=document.createElement('span');
+    s.className='dot'+(i===cur?' active':''); s.id='dot-'+i; d.appendChild(s);
+  }
+  document.getElementById('prev-btn').disabled=cur===0;
+  document.getElementById('next-btn').disabled=cur===total;
+}
+
+function stepChange(dir){
+  const prev=document.getElementById('step-'+cur);
+  const prevDot=document.getElementById('dot-'+cur);
+  if(prev) prev.classList.remove('active');
+  if(prevDot) prevDot.classList.remove('active');
+  cur=Math.max(0,Math.min(total,cur+dir));
+  const next=document.getElementById('step-'+cur);
+  const nextDot=document.getElementById('dot-'+cur);
+  if(next) next.classList.add('active');
+  if(nextDot) nextDot.classList.add('active');
+  const pb=document.getElementById('prev-btn');
+  const nb=document.getElementById('next-btn');
+  const sl=document.getElementById('step-label');
+  if(pb) pb.disabled=cur===0;
+  if(nb) nb.disabled=cur===total;
+  if(sl) sl.textContent=labels[cur];
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  show('contesto');
+});
+</script>
+</body>
+</html>
