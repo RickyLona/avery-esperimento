@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L'esperimento di Avery — 1944</title>
+<style>
+:root {
+  --bg: #f2f2f7;
+  --surface: #ffffff;
+  --surface2: #f9f9fb;
+  --border: rgba(0,0,0,0.07);
+  --shadow: 0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+  --text: #1c1c1e;
+  --muted: #6e6e73;
+  --hint: #aeaeb2;
+  --teal: #30c988;
+  --teal-bg: #e8faf2;
+  --teal-text: #1a6b44;
+  --red: #ff453a;
+  --red-bg: #fff2f1;
+  --red-text: #8b1a16;
+  --amber: #ff9f0a;
+  --amber-bg: #fff8ec;
+  --amber-text: #7a4500;
+  --purple: #7c6cf0;
+  --purple-bg: #f0eeff;
+  --purple-text: #3a2f8a;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000;
+    --surface: #1c1c1e;
+    --surface2: #2c2c2e;
+    --border: rgba(255,255,255,0.08);
+    --shadow: 0 2px 16px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.3);
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.3);
+    --text: #f2f2f7;
+    --muted: #aeaeb2;
+    --hint: #636366;
+    --teal-bg: #0d2e1e;
+    --teal-text: #7de8b8;
+    --red-bg: #2c0e0c;
+    --red-text: #ff9f9b;
+    --amber-bg: #2a1a00;
+    --amber-text: #ffd580;
+    --purple: #9b8ff5;
+    --purple-bg: #1e1a38;
+    --purple-text: #c0b8fa;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── Progress bar ── */
+#pbar { position:fixed; top:0; left:0; height:3px; width:0%; background:linear-gradient(90deg,#30c988,#7c6cf0); border-radius:0 2px 2px 0; transition:width .35s cubic-bezier(.4,0,.2,1); z-index:999; }
+
+/* ── Layout ── */
+.layout { display:flex; min-height:100vh; }
+
+.sidebar {
+  width:220px; flex-shrink:0;
+  padding:1.75rem 1rem;
+  position:sticky; top:0; height:100vh;
+  overflow-y:auto;
+  display:flex; flex-direction:column; gap:3px;
+}
+.sidebar-logo { font-size:12px; font-weight:600; color:var(--hint); padding:0 10px; margin-bottom:1.25rem; letter-spacing:.02em; }
+.nav-item {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 10px; border-radius:12px;
+  font-size:13px; font-weight:500; color:var(--muted);
+  cursor:pointer; transition:all .18s; border:none; background:none;
+  width:100%; text-align:left; font-family:var(--font);
+}
+.nav-item:hover { background:var(--surface); color:var(--text); }
+.nav-item.active { background:var(--surface); color:var(--text); box-shadow:var(--shadow-sm); }
+.nav-num {
+  width:26px; height:26px; border-radius:8px;
+  background:var(--bg); font-size:12px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--hint); flex-shrink:0; transition:all .18s;
+}
+.nav-item.active .nav-num { background:var(--teal); color:#fff; }
+.nav-slide-count { font-size:11px; color:var(--hint); margin-left:auto; }
+
+/* ── Main area ── */
+.main { flex:1; padding:0; display:flex; flex-direction:column; }
+
+/* ── Section ── */
+.sec { display:none; flex:1; flex-direction:column; }
+.sec.active { display:flex; }
+
+/* ── Slide engine ── */
+.slide-viewport {
+  flex:1; position:relative; overflow:hidden;
+  display:flex; flex-direction:column;
+}
+.slide {
+  display:none; flex:1; flex-direction:column;
+  padding:2.5rem 2.5rem 1.5rem;
+  animation:slideIn .28s cubic-bezier(.4,0,.2,1) both;
+}
+.slide.active { display:flex; }
+.slide.exit { animation:slideOut .2s ease both; }
+@keyframes slideIn { from { opacity:0; transform:translateX(24px); } to { opacity:1; transform:none; } }
+@keyframes slideOut { from { opacity:1; } to { opacity:0; transform:translateX(-16px); } }
+@keyframes slideInBack { from { opacity:0; transform:translateX(-24px); } to { opacity:1; transform:none; } }
+
+/* ── Slide content ── */
+.slide-tag {
+  display:inline-block; font-size:11px; font-weight:700;
+  letter-spacing:.05em; text-transform:uppercase;
+  color:var(--teal-text); background:var(--teal-bg);
+  padding:4px 12px; border-radius:30px; margin-bottom:1rem;
+  align-self:flex-start;
+}
+.slide-title {
+  font-size:34px; font-weight:800; letter-spacing:-.6px;
+  line-height:1.15; margin-bottom:.6rem;
+}
+.slide-subtitle {
+  font-size:17px; color:var(--muted); font-weight:400;
+  line-height:1.5; margin-bottom:1.75rem; max-width:560px;
+}
+.slide-visual { flex:1; display:flex; align-items:center; justify-content:center; }
+.slide-visual-top { margin-bottom:1.75rem; }
+
+/* ── Detail expander ── */
+.detail-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:13px; font-weight:600; color:var(--muted);
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:30px; padding:7px 16px; cursor:pointer;
+  font-family:var(--font); transition:all .15s;
+  box-shadow:var(--shadow-sm); margin-top:1.25rem; align-self:flex-start;
+}
+.detail-btn:hover { color:var(--text); border-color:var(--hint); }
+.detail-btn .arr { transition:transform .2s; display:inline-block; }
+.detail-btn.open .arr { transform:rotate(180deg); }
+.detail-panel {
+  background:var(--surface2); border-radius:16px;
+  border:1px solid var(--border); padding:1.1rem 1.25rem;
+  margin-top:.75rem; font-size:14px; color:var(--muted);
+  line-height:1.75; display:none;
+  animation:expandIn .2s ease both;
+}
+.detail-panel.open { display:block; }
+.detail-panel strong { color:var(--text); font-weight:500; }
+@keyframes expandIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+
+/* ── Bottom nav ── */
+.slide-nav {
+  display:flex; align-items:center; gap:12px;
+  padding:1.25rem 2.5rem;
+  border-top:1px solid var(--border);
+  background:var(--surface);
+}
+.snav-btn {
+  padding:9px 22px; border-radius:30px;
+  background:var(--bg); border:none;
+  color:var(--text); font-size:14px; font-weight:600;
+  cursor:pointer; font-family:var(--font);
+  box-shadow:var(--shadow-sm); transition:all .15s;
+}
+.snav-btn:hover { transform:scale(1.02); }
+.snav-btn:active { transform:scale(.97); }
+.snav-btn:disabled { opacity:.3; cursor:default; transform:none; }
+.snav-dots { flex:1; display:flex; justify-content:center; gap:7px; }
+.sdot { width:7px; height:7px; border-radius:50%; background:var(--hint); transition:all .22s; cursor:pointer; }
+.sdot.active { background:var(--teal); transform:scale(1.35); }
+.snav-counter { font-size:12px; color:var(--hint); font-weight:500; min-width:36px; text-align:right; }
+
+/* ── Visual components ── */
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; width:100%; }
+.vcard {
+  background:var(--surface); border-radius:20px;
+  box-shadow:var(--shadow); padding:1.5rem;
+  text-align:center;
+}
+.vcard-green { background:#eefaf3; border:1.5px solid #34c759; }
+.vcard-red { background:var(--red-bg); border:1.5px solid var(--red); }
+.vcard-blue { background:#e3f0ff; border:1.5px solid #3a8fd4; }
+.vcard-amber { background:var(--amber-bg); border:1.5px solid var(--amber); }
+.vcard-purple { background:var(--purple-bg); border:1.5px solid var(--purple); }
+.vcard-teal { background:var(--teal-bg); border:1.5px solid var(--teal); }
+
+.big-label { font-size:15px; font-weight:700; margin-bottom:.3rem; }
+.small-label { font-size:12px; line-height:1.5; }
+
+/* Enzyme row */
+.enz-row { display:grid; grid-template-columns:1fr 44px 1fr; align-items:center; gap:1rem; width:100%; }
+.enz-circle {
+  width:90px; height:90px; border-radius:50%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  margin:0 auto 10px; font-size:15px; font-weight:800;
+}
+.ec-blue { background:#e3f0ff; color:#1a4a8a; }
+.ec-amber { background:var(--amber-bg); color:var(--amber-text); }
+.ec-red { background:var(--red-bg); color:var(--red-text); border:2px solid var(--red); }
+.ec-sub { font-size:10px; font-weight:500; opacity:.7; margin-top:3px; }
+.arr-mid { font-size:28px; color:var(--hint); text-align:center; animation:pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:.4;transform:translateX(0)} 50%{opacity:1;transform:translateX(5px)} }
+.pill { display:inline-block; font-size:13px; font-weight:700; padding:5px 14px; border-radius:30px; margin-top:8px; }
+.pill-yes { background:var(--teal); color:#fff; }
+.pill-no { background:var(--red); color:#fff; }
+
+/* Griffin grid */
+.griffith-grid { display:grid; grid-template-columns:1fr 36px 1fr 36px 1fr; align-items:center; gap:8px; width:100%; }
+.gc-arrow { font-size:24px; color:var(--hint); text-align:center; }
+
+/* Result table */
+.rtable { width:100%; border-collapse:collapse; font-size:14px; }
+.rtable th { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--hint); padding:10px 14px; text-align:left; border-bottom:1px solid var(--border); }
+.rtable td { padding:13px 14px; border-bottom:1px solid var(--border); }
+.rtable tr:last-child td { border-bottom:none; }
+.rtable .r-yes td { background:#f0fdf6; }
+.rtable .r-no td { background:#fff5f5; }
+@media (prefers-color-scheme: dark) {
+  .rtable .r-yes td { background:#0a1f13; }
+  .rtable .r-no td { background:#1e0a0a; }
+}
+.badge { display:inline-block; font-size:12px; font-weight:700; padding:3px 10px; border-radius:8px; }
+.b-yes { background:var(--teal); color:#fff; }
+.b-no { background:var(--red); color:#fff; }
+
+/* Timeline */
+.tl-item { display:flex; gap:14px; margin-bottom:1.25rem; }
+.tl-left { display:flex; flex-direction:column; align-items:center; }
+.tl-dot { width:36px; height:36px; border-radius:50%; color:#fff; font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:var(--shadow-sm); }
+.tl-line { width:2px; background:var(--border); flex:1; margin:5px 0; }
+.tl-year { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; margin-bottom:.2rem; }
+.tl-t { font-size:15px; font-weight:700; margin-bottom:.3rem; }
+.tl-b { font-size:13px; color:var(--muted); line-height:1.65; }
+.tl-b strong { color:var(--text); }
+
+/* Limit grid */
+.limit-grid { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; width:100%; }
+.lcard { background:var(--amber-bg); border-radius:14px; padding:1rem 1.1rem; }
+.lc-t { font-size:13px; font-weight:700; color:var(--amber-text); margin-bottom:.3rem; }
+.lc-b { font-size:12px; color:var(--amber-text); opacity:.85; line-height:1.55; }
+
+/* Hershey steps */
+.hc-steps { display:flex; flex-direction:column; gap:.6rem; width:100%; }
+.hc-step { display:grid; grid-template-columns:36px 1fr; gap:12px; align-items:start; border-radius:16px; padding:.9rem 1rem; }
+.hc-num { width:36px; height:36px; border-radius:50%; color:#fff; font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.hc-t { font-size:14px; font-weight:700; margin-bottom:.2rem; }
+.hc-b { font-size:12px; line-height:1.55; }
+.hc-badges { display:flex; gap:6px; flex-wrap:wrap; margin-top:.4rem; }
+.hc-badge { font-size:11px; font-weight:700; padding:3px 9px; border-radius:8px; }
+.hc-result { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; width:100%; }
+
+/* Animations */
+@keyframes popIn { from{opacity:0;transform:scale(.88)} to{opacity:1;transform:scale(1)} }
+@keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+.slide.active .vcard { animation:slideUp .35s cubic-bezier(.34,1.3,.64,1) both; }
+.slide.active .vcard:nth-child(2) { animation-delay:.07s; }
+.slide.active .vcard:nth-child(3) { animation-delay:.14s; }
+.slide.active .vcard:nth-child(4) { animation-delay:.21s; }
+.slide.active .enz-circle { animation:popIn .4s cubic-bezier(.34,1.4,.64,1) .1s both; }
+.slide.active .pill { animation:popIn .45s cubic-bezier(.34,1.5,.64,1) .3s both; }
+.slide.active .hc-step { animation:slideUp .3s ease both; }
+.slide.active .hc-step:nth-child(2) { animation-delay:.08s; }
+.slide.active .hc-step:nth-child(3) { animation-delay:.16s; }
+.slide.active .lcard { animation:slideUp .32s ease both; }
+.slide.active .lcard:nth-child(2) { animation-delay:.06s; }
+.slide.active .lcard:nth-child(3) { animation-delay:.12s; }
+.slide.active .lcard:nth-child(4) { animation-delay:.18s; }
+
+/* Mobile */
+@media (max-width:640px) {
+  .layout { flex-direction:column; }
+  .sidebar { width:100%; height:auto; position:sticky; top:0; flex-direction:row; flex-wrap:nowrap; padding:.6rem .75rem; gap:4px; overflow-x:auto; z-index:50; background:rgba(242,242,247,.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--border); scrollbar-width:none; }
+  .sidebar::-webkit-scrollbar { display:none; }
+  .sidebar-logo { display:none; }
+  .nav-item { width:auto; white-space:nowrap; padding:6px 10px; }
+  .nav-num { display:none; }
+  .nav-slide-count { display:none; }
+  .slide { padding:1.5rem 1rem 1rem; }
+  .slide-title { font-size:26px; }
+  .slide-nav { padding:1rem; }
+  .two-col, .limit-grid, .hc-result { grid-template-columns:1fr; }
+  .griffith-grid { grid-template-columns:1fr 24px 1fr 24px 1fr; }
+  .enz-row { grid-template-columns:1fr 28px 1fr; }
+}
+@media (prefers-color-scheme:dark) and (max-width:640px) {
+  .sidebar { background:rgba(0,0,0,.85); }
+}
+</style>
+</head>
+<body>
+
+<div id="pbar"></div>
+
+<!-- COVER -->
+<div id="cover" style="position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;padding:2rem;">
+  <div style="max-width:500px;width:100%;text-align:center;">
+    <div style="display:inline-block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-text);background:var(--teal-bg);padding:5px 14px;border-radius:30px;margin-bottom:1.5rem;">Biologia Molecolare · Capitolo B1</div>
+    <h1 style="font-size:44px;font-weight:800;letter-spacing:-.8px;line-height:1.1;margin-bottom:.75rem;">L'esperimento<br>di Avery</h1>
+    <p style="font-size:17px;color:var(--muted);margin-bottom:.4rem;">Oswald Avery, Colin MacLeod, Maclyn McCarty</p>
+    <p style="font-size:14px;color:var(--hint);margin-bottom:.75rem;">1944 · Journal of Experimental Medicine</p>
+    <p style="font-size:15px;font-weight:600;color:var(--muted);margin-bottom:2.5rem;">Riccardo Lonardoni &amp; Francesco Paolillo</p>
+    <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <div style="background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:.8rem 1.1rem;min-width:100px;"><div style="font-size:22px;font-weight:800;color:var(--teal)">10</div><div style="font-size:11px;color:var(--hint);margin-top:2px">anni di ricerca</div></div>
+      <div style="background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:.8rem 1.1rem;min-width:100px;"><div style="font-size:22px;font-weight:800;color:var(--purple)">3</div><div style="font-size:11px;color:var(--hint);margin-top:2px">enzimi testati</div></div>
+      <div style="background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:.8rem 1.1rem;min-width:100px;"><div style="font-size:22px;font-weight:800;color:var(--amber)">1</div><div style="font-size:11px;color:var(--hint);margin-top:2px">risposta definitiva</div></div>
+    </div>
+    <button onclick="closeCover()" style="background:var(--text);color:var(--bg);border:none;border-radius:30px;padding:13px 36px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font);transition:transform .15s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">Inizia la presentazione</button>
+  </div>
+</div>
+
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-logo">Biologia · B1</div>
+  <button class="nav-item active" onclick="showSec('contesto')">
+    <span class="nav-num">1</span> Contesto
+    <span class="nav-slide-count" id="nc-contesto"></span>
+  </button>
+  <button class="nav-item" onclick="showSec('esperimento')">
+    <span class="nav-num">2</span> Esperimento
+    <span class="nav-slide-count" id="nc-esperimento"></span>
+  </button>
+  <button class="nav-item" onclick="showSec('risultati')">
+    <span class="nav-num">3</span> Risultati
+    <span class="nav-slide-count" id="nc-risultati"></span>
+  </button>
+  <button class="nav-item" onclick="showSec('limiti')">
+    <span class="nav-num">4</span> Limiti
+    <span class="nav-slide-count" id="nc-limiti"></span>
+  </button>
+  <button class="nav-item" onclick="showSec('dopo')">
+    <span class="nav-num">5</span> Dopo Avery
+    <span class="nav-slide-count" id="nc-dopo"></span>
+  </button>
+</aside>
+
+<main class="main">
+
+<!-- ═══ CONTESTO ═══ -->
+<div id="s-contesto" class="sec active">
+  <div class="slide-viewport">
+
+    <!-- C1 -->
+    <div class="slide active" id="c-0">
+      <div class="slide-tag">1928 – 1944</div>
+      <div class="slide-title">Chi porta l'informazione genetica?</div>
+      <div class="slide-subtitle">Anni '20: i cromosomi contengono sia DNA che proteine. Quale delle due è il materiale ereditario?</div>
+      <div class="slide-visual">
+        <div class="two-col">
+          <div class="vcard" style="background:var(--surface2)">
+            <div style="font-size:40px;font-weight:800;color:var(--purple);margin-bottom:.5rem">20</div>
+            <div class="big-label">Proteine</div>
+            <div class="small-label" style="color:var(--muted)">amminoacidi diversi — strutture complesse — candidate favorite</div>
+          </div>
+          <div class="vcard" style="background:var(--surface2)">
+            <div style="font-size:40px;font-weight:800;color:var(--teal);margin-bottom:.5rem">4</div>
+            <div class="big-label">DNA</div>
+            <div class="small-label" style="color:var(--muted)">nucleotidi diversi — sembrava troppo semplice</div>
+          </div>
+        </div>
+      </div>
+      <button class="detail-btn" onclick="toggleDetail(this)">
+        Approfondisci <span class="arr">&#8964;</span>
+      </button>
+      <div class="detail-panel">
+        Negli anni '20 del Novecento gli scienziati sapevano che i cromosomi contenevano sia DNA che proteine in quantità simili. Le proteine, con i loro 20 amminoacidi diversi, sembravano strutturalmente molto più adatte a codificare informazioni complesse. Il DNA, con soli 4 nucleotidi, sembrava troppo semplice. Questa convinzione era così radicata che pochi si preoccupavano di verificarla sperimentalmente.
+      </div>
+    </div>
+
+    <!-- C2 -->
+    <div class="slide" id="c-1">
+      <div class="slide-tag">I due ceppi batterici</div>
+      <div class="slide-title">Ceppo R vs Ceppo S</div>
+      <div class="slide-subtitle">Due varianti dello stesso batterio — <em>Streptococcus pneumoniae</em> — con una differenza cruciale.</div>
+      <div class="slide-visual">
+        <div class="two-col">
+          <div class="vcard vcard-green">
+            <svg viewBox="0 0 80 52" style="width:80px;height:52px;display:block;margin:0 auto 12px">
+              <ellipse cx="40" cy="26" rx="32" ry="18" fill="#a8e6c0" stroke="#34c759" stroke-width="2"/>
+              <ellipse cx="40" cy="26" rx="20" ry="11" fill="#eefaf3" stroke="#1a6b44" stroke-width="1.5"/>
+            </svg>
+            <div class="big-label" style="color:#1a6b44">Ceppo R</div>
+            <div class="small-label" style="color:#3b8a58;margin-top:.3rem">Senza capsula<br>Innocuo — il topo sopravvive</div>
+          </div>
+          <div class="vcard vcard-red">
+            <svg viewBox="0 0 80 52" style="width:80px;height:52px;display:block;margin:0 auto 12px">
+              <ellipse cx="40" cy="26" rx="36" ry="22" fill="#ffc9c9" stroke="#ff453a" stroke-width="2"/>
+              <ellipse cx="40" cy="26" rx="24" ry="14" fill="#fff2f1" stroke="#cc1a10" stroke-width="1.5"/>
+              <ellipse cx="40" cy="26" rx="13" ry="8" fill="#ff9a96" stroke="#cc1a10" stroke-width="1"/>
+            </svg>
+            <div class="big-label" style="color:#8b1a16">Ceppo S</div>
+            <div class="small-label" style="color:#a03030;margin-top:.3rem">Con capsula protettiva<br>Patogeno — il topo muore</div>
+          </div>
+        </div>
+      </div>
+      <button class="detail-btn" onclick="toggleDetail(this)">
+        Approfondisci <span class="arr">&#8964;</span>
+      </button>
+      <div class="detail-panel">
+        La differenza tra i due ceppi è una sola: la <strong>capsula di polisaccaridi</strong>. Il ceppo S la possiede — protegge il batterio dal sistema immunitario e lo rende patogeno. Il ceppo R ne è privo — viene eliminato facilmente. Il nome "S" viene dall'inglese <em>smooth</em> (liscio), "R" da <em>rough</em> (ruvido), per l'aspetto delle colonie al microscopio.
+      </div>
+    </div>
+
+    <!-- C3 -->
+    <div class="slide" id="c-2">
+      <div class="slide-tag">Griffith · 1928</div>
+      <div class="slide-title">Il fattore di trasformazione</div>
+      <div class="slide-subtitle">Batteri S uccisi + batteri R vivi = il topo muore. Qualcosa trasferisce la patogenicità.</div>
+      <div class="slide-visual">
+        <div class="griffith-grid">
+          <div class="vcard vcard-green" style="text-align:center;padding:1.25rem .75rem">
+            <svg viewBox="0 0 60 40" style="width:60px;height:40px;display:block;margin:0 auto 8px">
+              <ellipse cx="30" cy="20" rx="26" ry="15" fill="#a8e6c0" stroke="#34c759" stroke-width="2"/>
+              <ellipse cx="30" cy="20" rx="16" ry="9" fill="#eefaf3" stroke="#1a6b44" stroke-width="1.5"/>
+            </svg>
+            <div style="font-size:13px;font-weight:700;color:#1a6b44">S uccisi</div>
+            <div style="font-size:11px;color:#3b8a58;margin-top:2px">dal calore</div>
+          </div>
+          <div class="gc-arrow">+</div>
+          <div class="vcard vcard-green" style="text-align:center;padding:1.25rem .75rem">
+            <svg viewBox="0 0 60 40" style="width:60px;height:40px;display:block;margin:0 auto 8px">
+              <ellipse cx="30" cy="20" rx="20" ry="12" fill="#d1f0e0" stroke="#34c759" stroke-width="2"/>
+              <ellipse cx="30" cy="20" rx="12" ry="7" fill="#eefaf3" stroke="#1a6b44" stroke-width="1.5"/>
+            </svg>
+            <div style="font-size:13px;font-weight:700;color:#1a6b44">R vivi</div>
+            <div style="font-size:11px;color:#3b8a58;margin-top:2px">innocui</div>
+          </div>
+          <div class="gc-arrow">&#8594;</div>
+          <div class="vcard vcard-red" style="text-align:center;padding:1.25rem .75rem">
+            <div style="font-size:26px;font-weight:800;color:var(--red);margin-bottom:6px">!</div>
+            <div style="font-size:13px;font-weight:700;color:#8b1a16">Topo muore</div>
+            <div style="font-size:11px;color:#a03030;margin-top:2px">batteri S vivi nei tessuti</div>
+          </div>
+        </div>
+      </div>
+      <button class="detail-btn" onclick="toggleDetail(this)">
+        Approfondisci <span class="arr">&#8964;</span>
+      </button>
+      <div class="detail-panel">
+        Griffith scopre che i batteri R innocui vengono <strong>trasformati</strong> in batteri S patogeni dal contatto con i batteri S morti. La trasformazione avviene anche in provetta, senza topi. Qualcosa presente nei batteri S uccisi trasmette la capacità di formare la capsula. Griffith chiama questa sostanza sconosciuta <strong>fattore di trasformazione</strong> — ma non riesce a identificarla chimicamente. Avery raccoglie la sfida.
+      </div>
+    </div>
+
+  </div>
+  <div class="slide-nav">
+    <button class="snav-btn" id="btn-prev-contesto" onclick="slideNav('contesto',-1)" disabled>&#8592; Indietro</button>
+    <div class="snav-dots" id="dots-contesto"></div>
+    <button class="snav-btn" id="btn-next-contesto" onclick="slideNav('contesto',1)">Avanti &#8594;</button>
+    <span class="snav-counter" id="cnt-contesto">1 / 3</span>
+  </div>
+</div>
+
+<!-- ═══ ESPERIMENTO ═══ -->
+<div id="s-esperimento" class="sec">
+  <div class="slide-viewport">
+
+    <!-- E1 -->
+    <div class="slide active" id="e-0">
+      <div class="slide-tag">Avery, MacLeod, McCarty · 1944</div>
+      <div class="slide-title">La logica dell'esperimento</div>
+      <div class="slide-subtitle">Distruggi una molecola alla volta. Se la trasformazione si blocca, quella è la responsabile.</div>
+      <div class="slide-visual">
+        <div style="width:100%;background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:1.5rem">
+          <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:8px;">
+            <div style="background:#fff2f1;border-radius:14px;padding:1rem;text-align:center;border:1.5px solid var(--red)">
+              <svg viewBox="0 0 60 44" style="width:56px;height:40px;display:block;margin:0 auto 6px">
+                <ellipse cx="30" cy="22" rx="26" ry="16" fill="#ffc9c9" stroke="#ff453a" stroke-width="2"/>
+                <ellipse cx="30" cy="22" rx="16" ry="9" fill="#fff2f1" stroke="#cc1a10" stroke-width="1.5"/>
+                <ellipse cx="16" cy="34" rx="20" ry="11" fill="#ffc9c9" stroke="#ff453a" stroke-width="1.5"/>
+                <ellipse cx="46" cy="36" rx="18" ry="10" fill="#ffc9c9" stroke="#ff453a" stroke-width="1.5"/>
+              </svg>
+              <div style="font-size:12px;font-weight:700;color:#8b1a16">Batteri S</div>
+              <div style="font-size:10px;color:#c04040">uccisi</div>
+            </div>
+            <div style="font-size:18px;color:var(--hint);text-align:center">&#8594;</div>
+            <div style="background:#e3f0ff;border-radius:14px;padding:1rem;text-align:center;border:1.5px solid #3a8fd4">
+              <svg viewBox="0 0 56 44" style="width:52px;height:40px;display:block;margin:0 auto 6px">
+                <rect x="12" y="6" width="32" height="32" rx="4" fill="none" stroke="#3a8fd4" stroke-width="1.5"/>
+                <circle cx="22" cy="16" r="4" fill="#3a8fd4" opacity=".5"/>
+                <circle cx="34" cy="14" r="3" fill="#7c6cf0" opacity=".5"/>
+                <circle cx="26" cy="26" r="3.5" fill="#30c988" opacity=".5"/>
+                <circle cx="38" cy="28" r="2.5" fill="#ff9f0a" opacity=".5"/>
+              </svg>
+              <div style="font-size:12px;font-weight:700;color:#1a3a6a">Estratto</div>
+              <div style="font-size:10px;color:#3a6aaa">DNA · RNA · Proteine</div>
+            </div>
+            <div style="font-size:18px;color:var(--hint);text-align:center">+</div>
+            <div style="background:#eefaf3;border-radius:14px;padding:1rem;text-align:center;border:1.5px solid #34c759">
+              <svg viewBox="0 0 56 44" style="width:52px;height:40px;display:block;margin:0 auto 6px">
+                <ellipse cx="24" cy="20" rx="18" ry="10" fill="#a8e6c0" stroke="#34c759" stroke-width="1.5"/>
+                <ellipse cx="24" cy="20" rx="11" ry="6" fill="#eefaf3" stroke="#1a6b44" stroke-width="1"/>
+                <ellipse cx="42" cy="30" rx="14" ry="8" fill="#a8e6c0" stroke="#34c759" stroke-width="1.5"/>
+                <ellipse cx="42" cy="30" rx="8" ry="5" fill="#eefaf3" stroke="#1a6b44" stroke-width="1"/>
+              </svg>
+              <div style="font-size:12px;font-weight:700;color:#1a6b44">Batteri R</div>
+              <div style="font-size:10px;color:#3b8a58">vivi, innocui</div>
+            </div>
+            <div style="font-size:18px;color:var(--hint);text-align:center">&#8594;</div>
+            <div style="background:var(--surface2);border-radius:14px;padding:1rem;text-align:center;border:1.5px solid var(--border)">
+              <div style="font-size:32px;color:var(--hint);line-height:1;margin-bottom:6px">?</div>
+              <div style="font-size:12px;font-weight:700;color:var(--muted)">Risultato</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="detail-btn" onclick="toggleDetail(this)">
+        Approfondisci <span class="arr">&#8964;</span>
+      </button>
+      <div class="detail-panel">
+        Avery e i colleghi prendono l'estratto dei batteri S uccisi — che contiene il fattore di trasformazione — e lo trattano con enzimi specifici che degradano una sola categoria di molecola per volta: <strong>RNasi</strong> per l'RNA, <strong>Proteasi</strong> per le proteine, <strong>DNasi</strong> per il DNA. Dopo ogni trattamento, aggiungono l'estratto a batteri R vivi e verificano se la trasformazione avviene ancora. La logica è semplice: se rimuovo X e la trasformazione si blocca, X è il fattore responsabile.
+      </div>
+    </div>
+
+    <!-- E2 -->
+    <div class="slide" id="e-1">
+      <div class="slide-tag">Trattamento 1</div>
+      <div class="slide-title">RNasi — RNA eliminato</div>
+      <div class="slide-subtitle">L'enzima degrada completamente tutto l'RNA nell'estratto.</div>
+      <div class="slide-visual">
+        <div class="enz-row">
+          <div style="text-align:center">
+            <div class="enz-circle ec-blue">
+              <span>RNasi</span>
+              <span class="ec-sub">degrada RNA</span>
+            </div>
+            <div style="font-size:12px;color:var(--hint)">DNA intatto ✓</div>
+            <div style="font-size:12px;color:var(--hint)">Proteine intatte ✓</div>
+          </div>
+          <div class="arr-mid">&#8594;</div>
+          <div style="text-align:center">
+            <div style="width:90px;height:90px;border-radius:50%;background:#fff2f1;border:2.5px solid var(--red);display:flex;align-items:center;justify-content:center;margin:0 auto 10px">
+              <svg viewBox="0 0 50 34" style="width:46px;height:30px"><ellipse cx="25" cy="17" rx="22" ry="13" fill="#ffc9c9" stroke="#ff453a" stroke-width="2"/><ellipse cx="25" cy="17" rx="13" ry="7" fill="#fff2f1" stroke="#cc1a10" stroke-width="1.5"/></svg>
+            </div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:6px">R &#8594; S virulenti</div>
+            <span class="pill pill-yes">Trasformazione avviene</span>
+          </div>
+        </div>
+      </div>
+      <button class="detail-btn" onclick="toggleDetail(this)">
+        Approfondisci <span class="arr">&#8964;</span>
+      </button>
+      <div class="detail-panel">
+        Anche senza RNA nell'estratto, i batteri R si trasformano comunque in batteri S virulenti. La trasformazione avviene normalmente. <strong>Conclusione: l'RNA non è il fattore di trasformazione.</strong> L'RNA è escluso dalla lista dei candidati.
+      </div>
+    </div>
+
+    <!-- E3 -->
+    <div class="slide" id="e-2">
+      <div class="slide-tag">Trattamento 2</div>
+      <div class="slide-title">Proteasi — proteine eliminate</div>
+      <div class="slide-subtitle">L'enzima degrada completamente tutte le proteine nell'estratto.</div>
+      <div class="slide-visual">
+        <div class="enz-row">
+          <div style="text-align:center">
+            <div class="enz-circle ec-amber">
+              <span>Proteasi</span>
+              <span class="ec-sub">degrada proteine</span>
+            </div>
+            <div style="font-size:12px;color:var(--hint)">DNA intatto ✓</div>
+            <div style="font-size:12px;color:var(--hint)">RNA intatto ✓</div>
+          </div>
+          <div class="arr-mid">&#8594;</div>
+          <div style="text-align:center">
+            <div style="width:90px;height:90px;border-radius:50%;background:#fff2f1;border:2.5px solid var(--red);display:flex;align-items:center;justify-content:center;margin:0 auto 10px">
+              <svg viewBox="0 0 50 34" style="width:46px;height:30px"><ellipse cx="25" cy="17" rx="22" ry="13" fill="#ffc9c9" stroke="#ff453a" stroke-width="2"/><ellipse cx="25" cy="17" rx="13" ry="7" fill="#fff2f1" stroke="#cc1a10" stroke-width="1.5"/></svg>
+            </div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:6px">R &#8594; S virulenti</div>
+            <span class="pill pill-yes">Trasformazione avviene</span>
+          </div>
+        </div>
+      </div>
+      <button class="detail-btn" onclick="toggleDetail(this)">
+        Approfondisci <span class="arr">&#8964;</span>
+      </button>
+      <div class="detail-panel">
+        Anche senza proteine, la trasformazione avviene. <strong>Conclusione: le proteine non sono il fattore di trasformazione.</strong> Questo è il risultato più dirompente — elimina la molecola considerata la candidata più plausibile. La teoria dominante dell'epoca inizia a sgretolarsi.
+      </div>
+    </div>
+
+    <!-- E4 -->
+    <div class="slide" id="e-3">
+      <div class="slide-tag">Trattamento 3 — decisivo</div>
+      <div class="slide-title">DNasi — DNA eliminato</div>
+      <div class="slide-subtitle">L'enzima degrada completamente tutto il DNA nell'estratto.</div>
+      <div class="slide-visual">
+        <div class="enz-row">
+          <div style="text-align:center">
+            <div class="enz-circle ec-red">
+              <span>DNasi</span>
+              <span class="ec-sub">degrada DNA</span>
+            </div>
+            <div style="font-size:12px;color:var(--hint)">RNA intatto ✓</div>
+            <div style="font-size:12px;color:var(--hint)">Proteine intatte ✓</div>
+          </div>
+          <div class="arr-mid">&#8594;</div>
+          <div style="text-align:center">
+            <div style="width:90px;height:90px;border-radius:50%;background:#eefaf3;border:2.5px solid #34c759;display:flex;align-items:center;justify-content:center;margin:0 auto 10px">
+              <svg viewBox="0 0 50 34" style="width:46px;height:30px"><ellipse cx="25" cy="17" rx="20" ry="12" fill="#a8e6c0" stroke="#34c759" stroke-width="2"/><ellipse cx="25" cy="17" rx="12" ry="6" fill="#eefaf3" stroke="#1a6b44" stroke-width="1.5"/></svg>
+            </div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:6px">R rimangono R</div>
+            <span class="pill pill-no">Trasformazione bloccata</span>
+          </div>
+        </div>
+      </div>
+      <button class="detail-btn" onclick="toggleDetail(this)">
+        Approfondisci <span class="arr">&#8964;</span>
+      </button>
+      <div class="detail-panel">
+        Senza DNA, nessuna trasformazione. I batteri R rimangono R. <strong>Il DNA è l'unica molecola la cui assenza blocca il processo.</strong> Avery riesce anche a isolare DNA quasi puro e dimostrare che da solo è sufficiente a indurre la trasformazione batterica. Per la prima volta nella storia: il DNA è il materiale genetico.
+      </div>
+    </div>
+
+  </div>
+  <div class="slide-nav">
+    <button class="snav-btn" id="btn-prev-esperimento" onclick="slideNav('esperimento',-1)" disabled>&#8592; Indietro</button>
+    <div class="snav-dots" id="dots-esperimento"></div>
+    <button class="snav-btn" id="btn-next-esperimento" onclick="slideNav('esperimento',1)">Avanti &#8594;</button>
+    <span class="snav-counter" id="cnt-esperimento">1 / 4</span>
+  </div>
+</div>
+
+<!-- ═══ RISULTATI ═══ -->
+<div id="s-risultati" class="sec">
+  <div class="slide-viewport">
+
+    <!-- R1 -->
+    <div class="slide active" id="r-0">
+      <div class="slide-tag">Conclusioni · 1944</div>
+      <div class="slide-title">Il DNA è il materiale genetico</div>
+      <div class="slide-subtitle">Un metodo di eliminazione sistematica porta a una risposta inequivocabile.</div>
+      <div class="slide-visual">
+        <div style="width:100%;background:var(--surface);border-radius:20px;box-shadow:var(--shadow);overflow:hidden">
+          <table class="rtable">
+            <thead><tr><th>Enzima</th><th>Molecola eliminata</th><th>Trasformazione</th></tr></thead>
+            <tbody>
+              <tr class="r-yes"><td><strong>RNasi</strong></td><td>RNA</td><td><span class="badge b-yes">Avviene ✓</span></td></tr>
+              <tr class="r-yes"><td><strong>Proteasi</strong></td><td>Proteine</td><td><span class="badge b-yes">Avviene ✓</span></td></tr>
+              <tr class="r-no"><td><strong>DNasi</strong></td><td><strong>DNA</strong></td><td><span class="badge b-no">Bloccata ✗</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <button class="detail-btn" onclick="toggleDetail(this)">
+        Approfondisci <span class="arr">&#8964;</span>
+      </button>
+      <div class="detail-panel">
+        L'unica condizione che blocca la trasformazione è l'assenza di DNA. RNA e proteine sono irrilevanti. Avery ribalta il paradigma dominante con un approccio elementare: <strong>non teorizza, elimina</strong>. Rimuove ogni possibile alternativa finché rimane una sola spiegazione possibile. Per la prima volta nella storia della biologia, si dimostra sperimentalmente che il materiale genetico è costituito da DNA.
+      </div>
+    </div>
+
+    <!-- R2 -->
+    <div class="slide" id="r-1">
+      <div class="slide-tag">Perché è rivoluzionario</div>
+      <div class="slide-title">Un paradigma rovesciato</div>
+      <div class="slide-subtitle">Prima del 1944 tutti credevano che le proteine fossero il materiale genetico.</div>
+      <div class="slide-visual">
+        <div class="two-col">
+          <div class="vcard" style="background:var(--surface2)">
+            <div style="font-size:13px;font-weight:700;color:var(--hint);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.05em">Prima</div>
+            <div style="font-size:22px;font-weight:800;color:var(--purple);margin-bottom:.4rem">Proteine</div>
+            <div style="font-size:13px;color:var(--muted);line-height:1.6">20 amminoacidi, strutture complesse, sembravano le uniche abbastanza varie da codificare la vita</div>
+          </div>
+          <div class="vcard vcard-teal">
+            <div style="font-size:13px;font-weight:700;color:var(--teal-text);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.05em">Dopo Avery</div>
+            <div style="font-size:22px;font-weight:800;color:var(--teal);margin-bottom:.4rem">DNA</div>
+            <div style="font-size:13px;color:var(--teal-text);line-height:1.6;opacity:.85">4 nucleotidi bastano — la sequenza è il codice. La semplicità non era un limite, era la soluzione</div>
+          </div>
+        </div>
+      </div>
+      <button class="detail-btn" onclick="toggleDetail(this)">
+        Approfondisci <span class="arr">&#8964;</span>
+      </button>
+      <div class="detail-panel">
+        La scoperta di Avery non fu solo una risposta scientifica — fu un cambio di paradigma. Fino ad allora, la complessità delle proteine sembrava l'unica spiegazione possibile per la varietà della vita. Avery dimostrò che quattro nucleotidi, ordinati in sequenze diverse, potevano codificare informazioni infinitamente complesse. Questa intuizione aprì la strada alla domanda successiva: <em>che struttura ha il DNA?</em> — che Watson e Crick avrebbero risposto nel 1953.
+      </div>
+    </div>
+
+  </div>
+  <div class="slide-nav">
+    <button class="snav-btn" id="btn-prev-risultati" onclick="slideNav('risultati',-1)" disabled>&#8592; Indietro</button>
+    <div class="snav-dots" id="dots-risultati"></div>
+    <button class="snav-btn" id="btn-next-risultati" onclick="slideNav('risultati',1)">Avanti &#8594;</button>
+    <span class="snav-counter" id="cnt-risultati">1 / 2</span>
+  </div>
+</div>
+
+<!-- ═══ LIMITI ═══ -->
+<div id="s-limiti" class="sec">
+  <div class="slide-viewport">
+
+    <!-- L1 -->
+    <div class="slide active" id="l-0">
+      <div class="slide-tag">Ricezione scientifica · 1944</div>
+      <div class="slide-title">Perché nessuno ci credette</div>
+      <div class="slide-subtitle">Un risultato rivoluzionario, accolto con scetticismo. Quattro motivi.</div>
+      <div class="slide-visual">
+        <div class="limit-grid">
+          <div class="lcard">
+            <div class="lc-t">DNA "troppo semplice"</div>
+            <div class="lc-b">Solo 4 nucleotidi — come può contenere informazioni così complesse?</div>
+          </div>
+          <div class="lcard">
+            <div class="lc-t">Campione non puro</div>
+            <div class="lc-b">Tracce di proteine residue — forse erano quelle, non il DNA?</div>
+          </div>
+          <div class="lcard">
+            <div class="lc-t">Batteri "inferiori"</div>
+            <div class="lc-b">I procarioti erano considerati troppo semplici per avere veri geni.</div>
+          </div>
+          <div class="lcard">
+            <div class="lc-t">Nessuna conferma</div>
+            <div class="lc-b">Serviva un sistema sperimentale diverso e indipendente.</div>
+          </div>
+        </div>
+      </div>
+      <button class="detail-btn" onclick="toggleDetail(this)">
+        Approfondisci <span class="arr">&#8964;</span>
+      </button>
+      <div class="detail-panel">
+        Lo scetticismo verso Avery non era irrazionale — aveva basi concrete. Il campione di DNA usato conteneva tracce di contaminazione proteica, quindi non si poteva escludere del tutto un loro ruolo. Inoltre la genetica batterica era un campo nuovo: molti scienziati non erano certi che i batteri possedessero veri e propri geni. Serviva una conferma con un approccio completamente diverso — arrivò nel 1952 con Hershey e Chase.
+      </div>
+    </div>
+
+    <!-- L2 -->
+    <div class="slide" id="l-1">
+      <div class="slide-tag">Un Nobel mai ricevuto</div>
+      <div class="slide-title">Avery non fu premiato</div>
+      <div class="slide-subtitle">Muore nel 1955. Watson, Crick e Wilkins ricevono il Nobel nel 1962 — costruito sulle sue fondamenta.</div>
+      <div class="slide-visual">
+        <div style="width:100%;max-width:480px;margin:0 auto">
+          <div class="vcard vcard-amber" style="text-align:center;padding:2rem">
+            <div style="font-size:48px;font-weight:800;color:var(--amber);margin-bottom:.75rem">1955</div>
+            <div style="font-size:16px;font-weight:700;color:var(--amber-text);margin-bottom:.5rem">Avery muore senza il Nobel</div>
+            <div style="font-size:13px;color:var(--amber-text);opacity:.85;line-height:1.65">Molti storici lo considerano una delle omissioni più gravi nella storia del premio. I Premi Nobel non vengono assegnati postumi.</div>
+          </div>
+        </div>
+      </div>
+      <button class="detail-btn" onclick="toggleDetail(this)">
+        Approfondisci <span class="arr">&#8964;</span>
+      </button>
+      <div class="detail-panel">
+        Avery fu nominato più volte al Nobel ma non lo ricevette mai. Le ragioni sono probabilmente una combinazione dello scetticismo iniziale verso i suoi risultati e della sua morte nel 1955 — i premi Nobel non vengono assegnati postumi. Watson, Crick e Wilkins lo ricevettero nel 1962 per la struttura del DNA. Watson in seguito riconobbe l'importanza del lavoro di Avery, definendolo il prerequisito necessario per la loro scoperta.
+      </div>
+    </div>
+
+  </div>
+  <div class="slide-nav">
+    <button class="snav-btn" id="btn-prev-limiti" onclick="slideNav('limiti',-1)" disabled>&#8592; Indietro</button>
+    <div class="snav-dots" id="dots-limiti"></div>
+    <button class="snav-btn" id="btn-next-limiti" onclick="slideNav('limiti',1)">Avanti &#8594;</button>
+    <span class="snav-counter" id="cnt-limiti">1 / 2</span>
+  </div>
+</div>
+
+<!-- ═══ DOPO ═══ -->
+<div id="s-dopo" class="sec">
+  <div class="slide-viewport">
+
+    <!-- D1 -->
+    <div class="slide active" id="d-0">
+      <div class="slide-tag">1952</div>
+      <div class="slide-title">Hershey e Chase — la conferma</div>
+      <div class="slide-subtitle">Il fago T2 con isotopi radioattivi chiude definitivamente il dibattito.</div>
+      <div class="slide-visual">
+        <div class="hc-steps">
+          <div class="hc-step" style="background:#f0eeff;border:1.5px solid var(--purple)">
+            <div class="hc-num" style="background:var(--purple)">1</div>
+            <div>
+              <div class="hc-t" style="color:var(--purple-text)">Marcatura radioattiva</div>
+              <div class="hc-badges">
+                <span class="hc-badge" style="background:#e3f0ff;color:#1a3a6a">³²P nel DNA</span>
+                <span class="hc-badge" style="background:#fff2f1;color:#8b1a16">³⁵S nelle proteine</span>
+              </div>
+            </div>
+          </div>
+          <div class="hc-step" style="background:#eefaf3;border:1.5px solid #34c759">
+            <div class="hc-num" style="background:#34c759">2</div>
+            <div>
+              <div class="hc-t" style="color:#1a6b44">Infezione dei batteri E. coli</div>
+              <div class="hc-b" style="color:#3b8a58">Il fago inietta il suo materiale nel batterio. Il guscio proteico resta fuori.</div>
+            </div>
+          </div>
+          <div class="hc-step" style="background:#e3f0ff;border:1.5px solid #3a8fd4">
+            <div class="hc-num" style="background:#3a8fd4">3</div>
+            <div>
+              <div class="hc-t" style="color:#1a3a6a">Centrifugazione</div>
+              <div class="hc-b" style="color:#3a6aaa">Batteri (pellet) separati dai gusci virali (surnatante).</div>
+            </div>
+          </div>
+          <div class="hc-result">
+            <div style="background:#fff2f1;border-radius:12px;padding:.9rem;text-align:center;border:1.5px solid var(--red)">
+              <div style="font-size:20px;font-weight:800;color:var(--red)">³⁵S</div>
+              <div style="font-size:12px;color:#8b1a16;margin-top:3px">nel surnatante<br>proteine <strong>fuori</strong></div>
+            </div>
+            <div style="background:#eefaf3;border-radius:12px;padding:.9rem;text-align:center;border:2px solid #34c759">
+              <div style="font-size:20px;font-weight:800;color:var(--teal)">³²P</div>
+              <div style="font-size:12px;color:#1a6b44;margin-top:3px">nel pellet<br>DNA <strong>dentro</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="detail-btn" onclick="toggleDetail(this)">
+        Approfondisci <span class="arr">&#8964;</span>
+      </button>
+      <div class="detail-panel">
+        Hershey e Chase dimostrano che solo il DNA entra nel batterio durante l'infezione — le proteine restano fuori. Eppure il batterio produce decine di nuovi fagi completi. Questo prova definitivamente che il DNA porta tutta l'informazione necessaria per replicare il virus. Ogni dubbio residuo sui risultati di Avery scompare. Il Nobel del 1969 va a Hershey, Luria e Delbrück per questi studi sui batteriofagi.
+      </div>
+    </div>
+
+    <!-- D2 -->
+    <div class="slide" id="d-1">
+      <div class="slide-tag">1952 – 1953</div>
+      <div class="slide-title">Verso la doppia elica</div>
+      <div class="slide-subtitle">Avery apre la strada. In due anni arriva la struttura del DNA.</div>
+      <div class="slide-visual">
+        <div style="width:100%">
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-dot" style="background:var(--teal)">1</div><div class="tl-line"></div></div>
+            <div>
+              <div class="tl-year" style="color:var(--teal)">1952</div>
+              <div class="tl-t">Rosalind Franklin — Photograph 51</div>
+              <div class="tl-b">Immagini ai raggi X rivelano una struttura simmetrica a elica con diametro costante. Dati trafugati da Wilkins e usati senza il suo consenso.</div>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-dot" style="background:var(--purple)">2</div></div>
+            <div>
+              <div class="tl-year" style="color:var(--purple)">1953</div>
+              <div class="tl-t">Watson e Crick — la doppia elica</div>
+              <div class="tl-b">Due catene antiparallele, basi complementari A=T e G≡C. Il Nobel 1962 va a Watson, Crick e Wilkins — non a Franklin, morta nel 1958.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="detail-btn" onclick="toggleDetail(this)">
+        Approfondisci <span class="arr">&#8964;</span>
+      </button>
+      <div class="detail-panel">
+        Senza Avery, Watson e Crick non avrebbero saputo su <em>cosa</em> concentrarsi. La scoperta della doppia elica è possibile solo perché Avery aveva già dimostrato che il DNA è il depositario dell'informazione genetica. È l'anello fondamentale della catena che porta dalla domanda di Griffith nel 1928 al modello di Watson e Crick nel 1953 — venticinque anni di biologia molecolare concentrati in una sequenza logica di esperimenti.
+      </div>
+    </div>
+
+  </div>
+    <!-- D3: slide finale -->
+    <div class="slide" id="d-2">
+      <div class="slide-tag">Conclusione</div>
+      <div class="slide-title">L'anello fondamentale</div>
+      <div class="slide-subtitle">Avery dimostrò che il DNA è il materiale genetico — nove anni prima che qualcuno capisse perché.</div>
+      <div class="slide-visual">
+        <div style="width:100%;display:flex;flex-direction:column;gap:.75rem;">
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;">
+            <div style="background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:1.25rem;text-align:center;">
+              <div style="font-size:26px;font-weight:800;color:var(--muted);margin-bottom:.35rem">1928</div>
+              <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:.25rem">Griffith</div>
+              <div style="font-size:12px;color:var(--hint)">Scopre il fattore di trasformazione — ma non sa cosa sia</div>
+            </div>
+            <div style="background:var(--teal-bg);border:2px solid var(--teal);border-radius:20px;padding:1.25rem;text-align:center;">
+              <div style="font-size:26px;font-weight:800;color:var(--teal);margin-bottom:.35rem">1944</div>
+              <div style="font-size:13px;font-weight:600;color:var(--teal-text);margin-bottom:.25rem">Avery</div>
+              <div style="font-size:12px;color:var(--teal-text);opacity:.85">Il fattore è il DNA — dimostrato senza margini di dubbio</div>
+            </div>
+            <div style="background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:1.25rem;text-align:center;">
+              <div style="font-size:26px;font-weight:800;color:var(--purple);margin-bottom:.35rem">1953</div>
+              <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:.25rem">Watson e Crick</div>
+              <div style="font-size:12px;color:var(--hint)">La struttura a doppia elica — possibile grazie ad Avery</div>
+            </div>
+          </div>
+
+          <div style="background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:1.4rem 1.75rem;border-left:4px solid var(--teal);">
+            <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:.45rem">Il contributo di Avery</div>
+            <div style="font-size:14px;color:var(--muted);line-height:1.7;">Senza sapere <em>che</em> il DNA era il materiale genetico, nessuno avrebbe cercato di capirne la struttura. L'esperimento del 1944 è il prerequisito logico di tutto ciò che viene dopo.</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;">
+            <div style="background:var(--amber-bg);border-radius:14px;padding:1rem;text-align:center;">
+              <div style="font-size:24px;font-weight:800;color:var(--amber)">10</div>
+              <div style="font-size:12px;color:var(--amber-text);margin-top:2px">anni di ricerca</div>
+            </div>
+            <div style="background:var(--red-bg);border-radius:14px;padding:1rem;text-align:center;">
+              <div style="font-size:24px;font-weight:800;color:var(--red)">0</div>
+              <div style="font-size:12px;color:var(--red-text);margin-top:2px">Nobel ricevuti</div>
+            </div>
+            <div style="background:var(--purple-bg);border-radius:14px;padding:1rem;text-align:center;">
+              <div style="font-size:24px;font-weight:800;color:var(--purple)">&#8734;</div>
+              <div style="font-size:12px;color:var(--purple-text);margin-top:2px">impatto sulla biologia</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  <div class="slide-nav">
+    <button class="snav-btn" id="btn-prev-dopo" onclick="slideNav('dopo',-1)" disabled>&#8592; Indietro</button>
+    <div class="snav-dots" id="dots-dopo"></div>
+    <button class="snav-btn" id="btn-next-dopo" onclick="slideNav('dopo',1)">Avanti &#8594;</button>
+    <span class="snav-counter" id="cnt-dopo">1 / 3</span>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ── Section map ──
+const secIds = ['contesto','esperimento','risultati','limiti','dopo'];
+const secMap = {contesto:0, esperimento:1, risultati:2, limiti:3, dopo:4};
+const slidePrefix = {contesto:'c', esperimento:'e', risultati:'r', limiti:'l', dopo:'d'};
+const slideCounts = {contesto:3, esperimento:4, risultati:2, limiti:2, dopo:3};
+const curSlide = {contesto:0, esperimento:0, risultati:0, limiti:0, dopo:0};
+let curSec = 'contesto';
+
+// ── Progress bar ──
+function updateProgress() {
+  const si = secMap[curSec];
+  const sc = curSlide[curSec];
+  const total = Object.values(slideCounts).reduce((a,b)=>a+b,0);
+  let done = 0;
+  for (let i=0; i<si; i++) done += slideCounts[secIds[i]];
+  done += sc + 1;
+  document.getElementById('pbar').style.width = (done/total*100) + '%';
+}
+
+// ── Dots ──
+function buildDots(sec) {
+  const cnt = slideCounts[sec];
+  const el = document.getElementById('dots-'+sec);
+  if (!el) return;
+  el.innerHTML = '';
+  for (let i=0; i<cnt; i++) {
+    const d = document.createElement('span');
+    d.className = 'sdot' + (i===curSlide[sec]?' active':'');
+    d.onclick = (function(idx){ return function(){ goSlide(sec, idx); }; })(i);
+    d.id = 'dot-'+sec+'-'+i;
+    el.appendChild(d);
+  }
+  const nc = document.getElementById('nc-'+sec);
+  if (nc) nc.textContent = (curSlide[sec]+1)+'/'+cnt;
+}
+
+function refreshNav(sec) {
+  const c = curSlide[sec], cnt = slideCounts[sec];
+  const pb = document.getElementById('btn-prev-'+sec);
+  const nb = document.getElementById('btn-next-'+sec);
+  const ct = document.getElementById('cnt-'+sec);
+  if (pb) pb.disabled = c===0;
+  if (nb) nb.disabled = c===cnt-1;
+  if (ct) ct.textContent = (c+1)+' / '+cnt;
+  document.querySelectorAll('#dots-'+sec+' .sdot').forEach((d,i)=>{
+    d.className = 'sdot'+(i===c?' active':'');
+  });
+  const nc = document.getElementById('nc-'+sec);
+  if (nc) nc.textContent = (c+1)+'/'+cnt;
+}
+
+// ── Navigate slides ──
+function goSlide(sec, idx, dir) {
+  const prefix = slidePrefix[sec];
+  const old = document.getElementById(prefix+'-'+curSlide[sec]);
+  if (old) old.classList.remove('active');
+  curSlide[sec] = idx;
+  const next = document.getElementById(prefix+'-'+idx);
+  if (next) {
+    if (dir === -1) next.style.animation = 'slideInBack .28s cubic-bezier(.4,0,.2,1) both';
+    else next.style.animation = '';
+    next.classList.add('active');
+    setTimeout(() => { if (next) next.style.animation = ''; }, 350);
+  }
+  refreshNav(sec);
+  updateProgress();
+}
+
+function slideNav(sec, dir) {
+  const c = curSlide[sec];
+  const n = Math.max(0, Math.min(slideCounts[sec]-1, c+dir));
+  if (n !== c) goSlide(sec, n, dir);
+}
+
+// ── Switch section ──
+function showSec(id) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('s-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item')[secMap[id]].classList.add('active');
+  curSec = id;
+  buildDots(id);
+  refreshNav(id);
+  updateProgress();
+  window.scrollTo(0,0);
+}
+
+// ── Detail expander ──
+function toggleDetail(btn) {
+  const panel = btn.nextElementSibling;
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+  btn.querySelector('.arr').innerHTML = isOpen ? '&#8964;' : '&#8963;';
+}
+
+// ── Cover ──
+function closeCover() {
+  const cover = document.getElementById('cover');
+  if (!cover) return;
+  cover.style.transition = 'opacity .4s ease, transform .4s ease';
+  cover.style.opacity = '0';
+  cover.style.transform = 'scale(.97)';
+  setTimeout(() => cover.style.display = 'none', 400);
+}
+
+// ── Keyboard nav ──
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') slideNav(curSec, 1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') slideNav(curSec, -1);
+});
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', function() {
+  secIds.forEach(s => buildDots(s));
+  showSec('contesto');
+});
+</script>
+</body>
+</html>
