@@ -1,1 +1,0 @@
-# avery-esperimento
